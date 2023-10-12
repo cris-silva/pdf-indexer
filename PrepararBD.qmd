@@ -1,0 +1,56 @@
+---
+title: "Preparar base de datos"
+format: html
+---
+
+```{r Paquetes utilizados}
+# Cargar los paquetes que se van a utilizar:
+library(tidyverse)
+library(RPostgres)
+
+# Crear la conexión a la base de datos:
+con <- dbConnect(Postgres(),
+                 host = "localhost",
+                 port = 54321,
+                 dbname = "ayt-expedientes",
+                 user = "postgres")
+```
+
+```{r Crear la la tabla de fojasdbbe}
+# Eliminar la base de datos si ya existe:
+if(dbExistsTable(con, "fojas")) dbRemoveTable(con, "fojas")
+
+# Ejecutar la consulta:
+dbSendQuery(con, 
+            "CREATE TABLE fojas (
+            id_foja bigserial PRIMARY KEY,
+            documento text,
+            pagina integer,
+            texto text);")
+
+
+# Agregar una columna para guardar el preprocesamiento de la búsqueda del texto:
+dbSendQuery(con,
+            "ALTER TABLE fojas
+            ADD COLUMN ts tsvector GENERATED ALWAYS AS (to_tsvector('spanish', texto)) STORED;")
+
+# Crear un índice para la búsqueda preprocesada:
+dbSendQuery(con,
+            "CREATE INDEX ts_idx ON fojas USING GIN (ts);")
+
+```
+
+Búsqueda de prueba:
+
+```{r Búsqueda de prueba}
+texto_buscado <- "gran hermana"
+
+sql_busqueda <- str_glue("SELECT documento, pagina, ts_headline(texto, plainto_tsquery('{t}')) AS resultado
+                         FROM fojas
+                         WHERE ts @@ phraseto_tsquery('spanish', '{t}');",
+                         t = texto_buscado)
+
+dbGetQuery(con, sql_busqueda)
+```
+
+REVISAR COMO HACER BÚSQUEDAS FUZZY

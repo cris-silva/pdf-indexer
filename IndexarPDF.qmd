@@ -1,0 +1,61 @@
+---
+title: "Extracción de texto desde PDF"
+format: html
+---
+
+## Introducción
+
+A continuación se describe el proceso utilizado para extraer el texto contenido en uno o varios archivos PDF contenidos en una carpeta y almacenarlo en una base de datos que pueda utilizarse para hacer consultas de términos que permitan identificar el archivo, la página y un fragmento de la frase donde se encontró la palabra o frase buscados.
+
+## Preparación del entorno
+
+Carga de las librerías utilizadas:
+
+```{r Carga de paquetes}
+library(tidyverse)
+library(pdftools)
+library(RPostgres)
+
+con <- dbConnect(Postgres(),
+                 host = "localhost",
+                 port = 54321,
+                 dbname = "ayt-expedientes",
+                 user = "postgres")
+```
+
+CREAR SCRIPT PARA CONSTRUIR LA BASE DE DATOS
+
+
+```{r}
+carpeta_pdf <- "PDF"
+archivos_pdf <- list.files(carpeta_pdf, 
+                           full.names = TRUE, 
+                           recursive = TRUE)
+```
+
+
+```{r Extraer el texto del archivo}
+i <- 1L
+archivo_pdf <- basename(archivos_pdf[i])
+texto_pdf <- pdf_text(archivos_pdf[i])
+total_paginas <- length(texto_pdf)
+```
+
+```{r}
+pagina_pdf <- 10L
+
+registro <- tibble(documento = archivo_pdf,
+                   pagina = pagina_pdf,
+                   texto = texto_pdf[pagina]) 
+
+dbWriteTable(con,
+             name = "fojas",
+             value = registro,
+             append = TRUE)
+```
+
+
+```{r}
+dbListTables(con)
+```
+
