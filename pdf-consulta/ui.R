@@ -24,7 +24,7 @@ fluidPage(
         # Mostrar la lista de resultados
         mainPanel(
           DTOutput("tabla_resultados"),
-          verbatimTextOutput(outputId = "consulta_salida")
+          htmlOutput(outputId = "consulta_salida")
         )
     )
 )
