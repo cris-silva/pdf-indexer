@@ -3,7 +3,7 @@ title: "Preparar base de datos"
 format: html
 ---
 
-```{r Paquetes utilizados}
+```{r paquetes-utilizados}
 # Cargar los paquetes que se van a utilizar:
 library(tidyverse)
 library(RPostgres)
@@ -11,12 +11,12 @@ library(RPostgres)
 # Crear la conexión a la base de datos:
 con <- dbConnect(Postgres(),
                  host = "localhost",
-                 port = 54321,
+                 port = 5432,
                  dbname = "ayt-expedientes",
                  user = "postgres")
 ```
 
-```{r Crear la la tabla de fojasdbbe}
+```{r crear-tabla-fojas}
 # Eliminar la base de datos si ya existe:
 if(dbExistsTable(con, "fojas")) dbRemoveTable(con, "fojas")
 
@@ -24,15 +24,15 @@ if(dbExistsTable(con, "fojas")) dbRemoveTable(con, "fojas")
 dbSendQuery(con, 
             "CREATE TABLE fojas (
             id_foja bigserial PRIMARY KEY,
-            documento text,
-            pagina integer,
-            texto text);")
+            archivo text,
+            pagina bigint,
+            contenido text);")
 
 
 # Agregar una columna para guardar el preprocesamiento de la búsqueda del texto:
 dbSendQuery(con,
             "ALTER TABLE fojas
-            ADD COLUMN ts tsvector GENERATED ALWAYS AS (to_tsvector('spanish', texto)) STORED;")
+            ADD COLUMN ts tsvector GENERATED ALWAYS AS (to_tsvector('spanish', contenido)) STORED;")
 
 # Crear un índice para la búsqueda preprocesada:
 dbSendQuery(con,
