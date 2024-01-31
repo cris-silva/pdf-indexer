@@ -18,44 +18,51 @@ library(RPostgres)
 
 con <- dbConnect(Postgres(),
                  host = "localhost",
-                 port = 54321,
+                 port = 5432,
                  dbname = "ayt-expedientes",
                  user = "postgres")
 ```
 
 CREAR SCRIPT PARA CONSTRUIR LA BASE DE DATOS
 
-
-```{r}
+```{r lista-de-archivos-pdf}
 carpeta_pdf <- "PDF"
 archivos_pdf <- list.files(carpeta_pdf, 
                            full.names = TRUE, 
                            recursive = TRUE)
 ```
 
+Crear una función para leer y ordenar el contenido de un archivo PDF:
 
-```{r Extraer el texto del archivo}
-i <- 1L
-archivo_pdf <- basename(archivos_pdf[i])
-texto_pdf <- pdf_text(archivos_pdf[i])
-total_paginas <- length(texto_pdf)
+```{r}
+indexar_pdf <- function(archivo_pdf) {
+  
+  # Leer el contenido del PDF y guardar en un vector:
+  texto_pdf <- 
+    pdf_text(archivo_pdf) %>% 
+    as_vector()
+  
+  # Construir una tabla con los textos y su ubicación:
+  df_pdf <- 
+    tibble(archivo = basename(archivo_pdf),
+           contenido = texto_pdf) %>%
+    rowid_to_column("pagina") %>% 
+    select(archivo, pagina, contenido)
+  
+  # Regresar el resultado:
+  return(df_pdf)
+  
+}
 ```
 
 ```{r}
-pagina_pdf <- 10L
-
-registro <- tibble(documento = archivo_pdf,
-                   pagina = pagina_pdf,
-                   texto = texto_pdf[pagina]) 
-
-dbWriteTable(con,
-             name = "fojas",
-             value = registro,
-             append = TRUE)
+# Indexar cada uno de los archivos PDF en la carpeta:
+for(archivo in archivos_pdf) {
+  
+  # Almacenar el contenido en la base de datos:
+  dbWriteTable(con,
+               name = "fojas",
+               value = indexar_pdf(archivo),
+               append = TRUE)
+}
 ```
-
-
-```{r}
-dbListTables(con)
-```
-
