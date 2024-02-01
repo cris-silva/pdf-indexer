@@ -49,7 +49,11 @@ function(input, output, session) {
       datatable(selection = "single",
                 rownames = FALSE,
                 colnames = c("Archivo", "Página", "Vista previa"),
-                escape = FALSE)
+                escape = FALSE,
+                options = list(
+                  language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json'),
+                  pageLength = 5)
+      )
     
   }) %>%
     bindEvent(input$boton_buscar)
