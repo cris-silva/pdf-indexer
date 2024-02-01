@@ -54,8 +54,22 @@ function(input, output, session) {
   }) %>%
     bindEvent(input$boton_buscar)
   
+  output$ubicacion <- renderPrint({
+    
+    resultado_seleccionado <-
+      resultados() %>% 
+      slice(input$tabla_resultados_rows_selected)
+    
+    h3(
+      str_glue("Encontrado en {a}, página {p}.",
+               a = resultado_seleccionado$archivo,
+               p = resultado_seleccionado$pagina)
+    )
+    
+  })
+  
   # Mostrar el contenido del resultado seleccionado
-  output$consulta_salida <- renderPrint({
+  output$contenido_resultado <- renderPrint({
     
     # validate(
     #   need(length(resultados()) > 0, "Seleccione un resultado de la lista para ver el contenido completo de la página.")

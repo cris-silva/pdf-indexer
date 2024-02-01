@@ -44,7 +44,8 @@ fluidPage(
       DTOutput("tabla_resultados"),
       hr(),
       h2("Contenido de la página"),
-      htmlOutput(outputId = "consulta_salida")
+      htmlOutput(outputId = "ubicacion"),
+      htmlOutput(outputId = "contenido_resultado")
     )
   )
 )
