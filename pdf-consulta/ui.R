@@ -40,10 +40,10 @@ fluidPage(
     
     # Mostrar la lista de resultados y el contenido del resultado seleccionado
     mainPanel(
-      h2("Resultados"),
+      h3("Resultados"),
       DTOutput("tabla_resultados"),
       hr(),
-      h2("Contenido de la página"),
+      h3("Contenido de la página"),
       htmlOutput(outputId = "ubicacion"),
       htmlOutput(outputId = "contenido_resultado")
     )

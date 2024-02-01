@@ -64,7 +64,7 @@ function(input, output, session) {
       resultados() %>% 
       slice(input$tabla_resultados_rows_selected)
     
-    h3(
+    h4(
       str_glue("Encontrado en {a}, página {p}.",
                a = resultado_seleccionado$archivo,
                p = resultado_seleccionado$pagina)
