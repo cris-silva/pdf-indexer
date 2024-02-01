@@ -48,7 +48,8 @@ function(input, output, session) {
       select(-contenido) %>% 
       datatable(selection = "single",
                 rownames = FALSE,
-                colnames = c("Archivo", "Página", "Vista previa"))
+                colnames = c("Archivo", "Página", "Vista previa"),
+                escape = FALSE)
     
   }) %>%
     bindEvent(input$boton_buscar)
