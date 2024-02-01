@@ -4,7 +4,7 @@
 # 
 # Aplicación para la búsqueda de texto en el expediente digitalizado.
 # 
-# Autor: Cristian Silva Arias (csilva@centrogeo.edu.mx)
+# Autor: Cristian Silva Arias (cris.silva@me.com)
 # 
 # ----------------------
 #
