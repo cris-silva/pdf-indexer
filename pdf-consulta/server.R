@@ -1,4 +1,17 @@
+# ======================
+# BÚSQUEDA EN EXPEDIENTE
+# ======================
+# 
+# Aplicación para la búsqueda de texto en el expediente digitalizado.
+# 
+# Autor: Cristian Silva Arias (csilva@centrogeo.edu.mx)
+# 
+# ----------------------
+#
+# Archivo de definición de lógica de aplicación
+#
 
+# Paquetes utilizados
 library(shiny)
 library(tidyverse)
 
@@ -8,39 +21,50 @@ function(input, output, session) {
   # Conectar a la base de datos
   source("conexion.R")
   
+  # Obtener los resultados de la base de datos al presionar el botón de búsqueda
   resultados <- reactive({
     
+    # Preparar la consulta
     consulta <- str_glue("SELECT archivo, pagina, ts_headline(contenido, plainto_tsquery('{t}')) AS resultado, ts_headline(contenido, plainto_tsquery('{t}'), 'HighlightAll=true') AS contenido
                          FROM fojas
                          WHERE ts @@ phraseto_tsquery('spanish', '{t}');",
                          t = input$texto_consulta)
     
-    # Ejecutar la consulta y mostrar los resultados en una tabla DT:
+    # Ejecutar la consulta y mostrar los resultados en una tabla DT
     dbGetQuery(con, consulta)
                 
   }) %>% 
     bindEvent(input$boton_buscar)
   
+  # Mostrar los resultados en una tabla
   output$tabla_resultados <- renderDT({
     
-    consulta <- str_glue("SELECT archivo, pagina, ts_headline(contenido, plainto_tsquery('{t}')) AS resultado, ts_headline(contenido, plainto_tsquery('{t}'), 'HighlightAll=true') AS contenido
-                         FROM fojas
-                         WHERE ts @@ phraseto_tsquery('spanish', '{t}');",
-                         t = input$texto_consulta)
+    # validate(
+    #   need(length(resultados()) > 0, "Escriba un término para buscar y presione el botón [Buscar] para ver los resultados.")
+    # )
     
     # Ejecutar la consulta y mostrar los resultados en una tabla DT:
     resultados() %>%
       select(-contenido) %>% 
       datatable(selection = "single",
-                rownames = FALSE)
+                rownames = FALSE,
+                colnames = c("Archivo", "Página", "Vista previa"))
     
   }) %>%
     bindEvent(input$boton_buscar)
   
-  output$consulta_salida <- renderPrint(
+  # Mostrar el contenido del resultado seleccionado
+  output$consulta_salida <- renderPrint({
+    
+    # validate(
+    #   need(length(resultados()) > 0, "Seleccione un resultado de la lista para ver el contenido completo de la página.")
+    # )
+    
+    # Extraer el contenido de la fila de resultados seleccionada
     resultados() %>% 
       slice(input$tabla_resultados_rows_selected) %>% 
       pull(contenido)
-  )
+    
+  })
   
 }
